@@ -1,3 +1,4 @@
+
 const hre = require("hardhat");
 const path = require("path");
 
@@ -58,7 +59,7 @@ async function main() {
   console.log(`Final balance of the writer: ${finalBalance} tokens`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
+// recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
  catch (error) {
   console.error("Error:", error);
