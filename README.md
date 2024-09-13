@@ -41,6 +41,11 @@ To get started with Write-To-Earn, follow these steps:
 # The screenshots and explanation: 
 
 # Frontend
+Welcome Page:
+
+![image](https://github.com/user-attachments/assets/b5481666-5c1e-4d2d-9218-58bdbf0a8b34)
+
+The component acts as the dApp's landing page. It gives a quick description of the platform's capabilities, invites visitors to explore content, and links to the login and registration pages.
 
 The component acts as the dApp's landing page. It gives a quick description of the platform's
 capabilities, invites visitors to explore content, and links to the login and registration pages.
