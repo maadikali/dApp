@@ -6,6 +6,7 @@ Compensation is based on the qualityand engagement of their work, including arti
 # Problem/Need
 This dApp addresses key issues in:
 
+
 1. Content Monetization: Improving how creators earn from their work.
 2. Cryptocurrency Access: Providing easier access to cryptocurrencies for rewards.
 3. Decentralization: Enhancing transparency and security in content management.
@@ -187,7 +188,7 @@ MetaMask is a browser plugin that allows users to manage their Ethereum wallets 
 1. Authentication of Users:
 Ascertain that the backend handles user authentication via Ethereum addresses. Users of MetaMask sign transactions with their private keys, therefore tying actions to specific Ethereum addresses ensures safe interactions.
 2. Signing a transaction:
-When users engage with smart contract (for example, registering as a writer or submitting an article), our backend must allow the user's MetaMask to sign
+When users engage with smart contract (for example, registering as a writer or submitting an article), the backend must allow the user's MetaMask to sign
 transactions.
 3. Web3.js and ethers.js integration:
 To interface with the Ethereum blockchain, use Web3.js or ethers.js in the backend. These libraries provide easy interfaces for interfacing with Ethereum and MetaMask.
