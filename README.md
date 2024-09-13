@@ -45,10 +45,6 @@ To get started with Write-To-Earn, follow these steps:
 The component acts as the dApp's landing page. It gives a quick description of the platform's
 capabilities, invites visitors to explore content, and links to the login and registration pages.
 
-Welcome Page:
-
-![image](https://github.com/user-attachments/assets/047601f6-b49e-4b8b-9f27-c3a91188e7aa)
-
 Users may safely log in to their accounts using the Login component. To authenticate users within the blockchain environment, it checks user credentials and connects with the backend.
 
 Login Page:
