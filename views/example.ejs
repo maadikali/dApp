@@ -1,0 +1,272 @@
+<!-- Your EJS template -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Your Page Title</title>
+  <!-- Include any necessary CSS and scripts here -->
+</head>
+<body>
+  <h1>Your Web Page</h1>
+
+  <!-- Form to Set Article -->
+  <form id="setArticleForm">
+    <label for="articleTitle">Article Title:</label>
+    <input type="text" id="articleTitle" name="articleTitle">
+    <button type="button" onclick="setArticle()">Set Article</button>
+  </form>
+
+  <!-- Display Token Balance -->
+  <div id="tokenBalanceArea">
+    Token Balance: <span id="tokenBalance"></span>
+  </div>
+
+  <!-- Include web3.js or ethers.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js"></script>
+
+
+<script>
+  // Replace with your contract's ABI and address
+  const contractABI = [[
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_commissionRate",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "writer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "commissionAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "CommissionReceived",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "earn",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "registerWriter",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "subscribe",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "writer",
+				"type": "address"
+			}
+		],
+		"name": "SubscriptionRenewed",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "unsubscribe",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawBalance",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "writer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "earnedAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "WriterEarned",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "writer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "initialBalance",
+				"type": "uint256"
+			}
+		],
+		"name": "WriterRegistered",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "commissionRate",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "isSubscriber",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalWriters",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "writerBalances",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]]; // Insert your ABI here
+  const contractAddress = '0x90BeD6B934380971798002FceEB7260d6F4B44f0'; // Insert your contract address here
+
+  const web3 = new Web3(window.ethereum);
+  const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+  async function checkMetaMaskConnection() {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        console.log('Connected to MetaMask');
+
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        const ownerAddress = accounts[0];
+
+        console.log('Current Account:', ownerAddress);
+
+        // Display the owner address on the HTML page
+        document.getElementById('ownerDisplay').innerText = 'Owner: ${ownerAddress}';
+
+        // Call a contract function (replace 'yourFunction' with the actual function name)
+        const result = await contract.methods.yourFunction().call({ from: ownerAddress });
+        console.log('Contract Result:', result);
+
+      } catch (error) {
+        console.error('MetaMask connection error:', error);
+      }
+    } else {
+      console.error('MetaMask not detected');
+    }
+  }
+</script>
+<p id="contractData"></p>
+
+<script>
+  // Inside checkMetaMaskConnection function
+  const result = await contract.methods.yourFunction().call({ from: ownerAddress });
+  console.log('Contract Result:', result);
+
+  // Display contract data on the HTML page
+  document.getElementById('contractData').innerText = 'Contract Data: ${result}';
+</script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wrimon | Articles Ordering Service</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div class="container">
+      <nav>
+        <div class="navbar">
+          <div class="logo">
+            <a href="../dashboard">
+              <h1>Wrimon</h1>
+            </a>
+            <ion-icon name="contrast-outline" id="icon" class="icon-dark-mod" style="color: var(--third-color)"></ion-icon>
+          </div>
+          <ul>
+            <li><a href="../dashboard">
+              <i class="fas fa-book"></i>
+              <span class="nav-item">Dashboard</span>
+            </a></li>
+            <li><a href="../fill_out">
+              <i class="fas fa-clock"></i>
+              <span class="nav-item">Article Ordering</span>
+            </a></li>
+            <li><a href="../profile">
+              <i class="fas fa-user"></i>
+              <span class="nav-item">Profile</span>
+            </a></li>
+            <% if (!session || !session.passport || !session.passport.user) { %>
+            <li><a href="../login">
+              <i class="fab fa-dochub"></i>
+              <span class="nav-item">Sign</span>
+            </a></li>
+            <% };%>
+            <% if (session && session.passport && session.passport.user) { %>
+              <li>
+                <form action="../logout" method="POST">
+                  <button type="submit" class="logout-button">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-item">Logout</span>
+                  </button>
+                </form>
+              </li>
+            <% };%>
+          </ul>
+        </div>
+      </nav>
+
+    <section class="main">
+      <div class="main-top">
+          <p>Explore the universe!</p>
+      </div>
+      <div class="main-body">
+          <h1><%= order.title %></h1>
+
+          <div class="form-group">
+            <label for="category">Category:</label>
+            <br>
+            <p><%= order.category_name %></p>
+          </div>
+          <br>
+          
+          <div class="form-group">
+            <label for="direction">Direction:</label>
+            <br>
+            <p><%= order.direction_name %></p>
+          </div>
+
+              <br>
+
+              <div class="form-group">
+                <label for="detailed-instructions">Detailed Instructions:</label>
+                <br>
+                <p><%= order.content %></p>
+              </div>
+            
+              <br>
+
+              <div class="form-group">
+                <label for="estimate">Estimate</label>
+                <br>
+                <%= order.price %>
+                <br>
+              </div>
+              
+              <br>
+          
+              <div class="form-group">
+                <label for="detailed-instructions">Status:</label>
+                <br>
+                <p><%= order.status %></p>
+              </div>
+              
+              <% if (order.status === "Done" && userIsWriter) { %>
+                <br>
+                <button style="cursor: pointer;" class="earn-btn" onclick="earnEstimateButton()">Earn Estimate</button>
+              <% } %>
+            
+
+              <br>
+
+              <form id="POST" action="/complete-order/<%= order.order_id %>" method="POST" enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label for="file"><br> Upload files:</label>
+                    <br>
+                    <input type="file" id="file" name="file" style="margin-bottom: 20px;">
+                    <br>
+                    <input type="submit" value="Submit">
+                </div>
+            </form>
+      </div>
+    </section>
+  </div>
+  
+
+  <script src="/js/design_changes.js"></script>
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"
+  type="application/javascript"> </script>
+  <script>
+      const contractABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_commissionRate",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "writer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "commissionAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CommissionReceived",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "writer",
+        "type": "address"
+      }
+    ],
+    "name": "SubscriptionRenewed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "writer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "earnedAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WriterEarned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "writer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "initialBalance",
+        "type": "uint256"
+      }
+    ],
+    "name": "WriterRegistered",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "commissionRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "earn",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "subscriberAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getIsSubscriber",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isSubscriber",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registerWriter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "subscribe",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalWriters",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unsubscribe",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawBalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "writerBalances",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+const contractAddress = '0x1BA8DcB919E6D11286473721024Ec9258CeF9583';
+
+async function earnEstimateButton() {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          const userAddress = accounts[0];
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const writeToEarnContract = new ethers.Contract(contractAddress, contractABI, signer);
+          const orderId = '<%= order.order_id %>';
+          const transactionResult = await writeToEarnContract.earn({ from: userAddress, value: ethers.utils.parseEther('0.001') });
+          await transactionResult.wait();
+          console.log('Transaction Result:', transactionResult);
+        } else {
+          console.error('No account available');
+        }
+
+      } catch (error) {
+        console.error('MetaMask connection error or contract interaction error:', error);
+      }
+    } else {
+      console.error('MetaMask not detected. Please install MetaMask and try again.');
+    }
+  }
+  </script>
+</body>
+
+</html>

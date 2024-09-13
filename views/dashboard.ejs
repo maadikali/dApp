@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wrimon | Articles Ordering Service</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="navbar">
+        <div class="logo">
+          <a href="/dashboard">
+            <h1>Wrimon</h1>
+          </a>
+          <ion-icon name="contrast-outline" id="icon" class="icon-dark-mod" style="color: var(--third-color)"></ion-icon>
+        </div>
+        <ul>
+          <li><a href="/dashboard">
+            <i class="fas fa-book"></i>
+            <span class="nav-item">Dashboard</span>
+          </a></li>
+          <li><a href="/fill_out">
+            <i class="fas fa-clock"></i>
+            <span class="nav-item">Article Ordering</span>
+          </a></li>
+          <li><a href="/profile">
+            <i class="fas fa-user"></i>
+            <span class="nav-item">Profile</span>
+          </a></li>
+          <% if (!session || !session.passport || !session.passport.user) { %>
+          <li><a href="/login">
+            <i class="fab fa-dochub"></i>
+            <span class="nav-item">Sign</span>
+          </a></li>
+          <% };%>
+          <% if (session && session.passport && session.passport.user) { %>
+            <li>
+              <form action="/logout" method="POST">
+                <button type="submit" class="logout-button">
+                  <i class="fas fa-sign-out-alt"></i>
+                  <span class="nav-item">Logout</span>
+                </button>
+              </form>
+            </li>
+          <% };%>
+        </ul>
+      </div>
+    </nav>
+  
+    <section class="main">
+      <div class="main-top">
+        <p>Explore the universe!</p>
+      </div>
+      <div class="main-body">
+        <h1>Materials</h1>
+        <div class="search_bar">
+          <form action="/search-articles" method="post">
+            <!-- Title input field -->
+            <input type="text" name="title" placeholder="Search by title" class="search-input" style="height: 50px; padding: 3px;">
+            <!-- Direction dropdown -->
+            <select name="direction" class="filter">
+              <option value="">Direction</option>
+              <% article_directions.forEach(articleDirection => { %>
+                <option value="<%= articleDirection.direction_id %>"><%= articleDirection.direction_name %></option>
+              <% }); %>
+            </select>
+            <!-- Existing filter by category and submit button -->
+            <select name="category" class="filter">
+              <option value="">Category</option>
+              <% categories.forEach(category => { %>
+                <option value="<%= category.category_id %>"><%= category.category_name %></option>
+              <% }); %>
+            </select>
+            <button type="submit" id="filterBtn" style="cursor: pointer;">Search</button>
+          </form>
+        </div>
+
+        <% let totalArticles = (typeof search_results !== 'undefined') ? search_results.length : article_orders.length; %>
+        <div class="row">
+          <p>Number of articles found: <span><%= totalArticles %></span></p>
+          <!-- <a href="#">See all</a> -->
+        </div>
+
+        <!-- Display search results if available -->
+        <% if (typeof search_results !== 'undefined' && search_results.length > 0) { %>
+          <div class="search-results">
+            <h2>Search Results:</h2>
+            <% search_results.forEach(result => { %>
+              <div class="job_card">
+                <div class="job_details">
+                  <div class="img">
+                    <i class="fab fa-google-drive"></i>
+                  </div>
+                  <div class="text">
+                    <h2>
+                      <% if (session && session.passport && session.passport.user) { %>
+                      <a href="/article_detail/<%= result.order_id %>"><%= result.title %></a>
+                      <% } %>
+                      <% if (!session || !session.passport || !session.passport.user) { %>
+                        <%= result.title %>
+                      <% } %>
+                    </h2>
+                    <span><%= result.category_name %> - <%= result.direction_name %></span>
+                  </div>
+                </div>
+                <div class="job_salary">
+                  <h4><%= result.price %></h4>
+                  <span><%= result.status %></span>
+                  <div class="moders-funcs">
+                    <% if (session && session.passport && session.passport.user) { %>
+                      <% if (session.passport.user.roles_id === 1) { %>
+                        <div class="form-group">
+                          <a href="/edit_order/<%= result.order_id %>" class="change-button">Change</a>
+                        </div>
+                        <form action="/delete-article/<%= result.order_id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this article?');">
+                          <button type="submit" class="delete-button">Delete</button>
+                        </form>
+                      <% } %>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <!-- Display your regular job cards here -->
+          <% article_orders.forEach(article_order => { %>
+            <div class="job_card">
+              <div class="job_details">
+                <div class="img">
+                  <i class="fab fa-google-drive"></i>
+                </div>
+                <div class="text">
+                  <h2>
+                    <% if (session && session.passport && session.passport.user) { %>
+                    <a href="/article_detail/<%= article_order.order_id %>"><%= article_order.title %></a>
+                    <% } %>
+                    <% if (!session || !session.passport || !session.passport.user) { %>
+                      <%= article_order.title %>
+                    <% } %>
+                  </h2>
+                  <span><%= article_order.category_name %> - <%= article_order.direction_name %></span>
+                </div>
+              </div>
+              <div class="job_salary">
+                <h4><%= article_order.price %></h4>
+                <span><%= article_order.status %></span>
+                <div class="moders-funcs">
+                  <% if (session && session.passport && session.passport.user) { %>
+                    <% console.log(session.passport.user.roles_id) %>
+                    <% if (session.passport.user.roles_id === 1) { %>
+                      <div class="form-group">
+                        <a href="/edit_order/<%= article_order.order_id %>"><button class="delete-button">Change</button></a>
+                      </div>
+                      <form action="/delete-article/<%= article_order.order_id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this article?');">
+                        <button type="submit" class="delete-button">Delete</button>
+                      </form>
+                    <% } %>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+    </section>
+  </div>
+
+<script src="/js/design_changes.js"></script>
+</body>
+</html>

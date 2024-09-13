@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wrimon | Articles Ordering Service</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div class="container">
+      <nav>
+        <div class="navbar">
+          <div class="logo">
+            <a href="/dashboard">
+              <h1>Wrimon</h1>
+            </a>
+            <ion-icon name="contrast-outline" id="icon" class="icon-dark-mod" style="color: var(--third-color)"></ion-icon>
+          </div>
+          <ul>
+            <li><a href="/dashboard">
+              <i class="fas fa-book"></i>
+              <span class="nav-item">Dashboard</span>
+            </a></li>
+            <li><a href="/fill_out">
+              <i class="fas fa-clock"></i>
+              <span class="nav-item">Article Ordering</span>
+            </a></li>
+            <li><a href="/profile">
+              <i class="fas fa-user"></i>
+              <span class="nav-item">Profile</span>
+            </a></li>
+            <% if (!session || !session.passport || !session.passport.user) { %>
+            <li><a href="/login">
+              <i class="fab fa-dochub"></i>
+              <span class="nav-item">Sign</span>
+            </a></li>
+            <% };%>
+            <% if (session && session.passport && session.passport.user) { %>
+              <li>
+                <button type="submit" class="logout-button" style="cursor: pointer;" onclick="checkMetaMaskConnection()">
+                  <i class="fas fa-wallet"></i>
+                  <span class="nav-item">Connect Wallet</span>
+                </button>
+              </li>
+              <% };%>
+            <% if (session && session.passport && session.passport.user) { %>
+              <li>
+                <form action="/logout" method="POST">
+                  <button type="submit" class="logout-button">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-item">Logout</span>
+                  </button>
+                </form>
+              </li>
+            <% };%>
+          </ul>
+        </div>
+      </nav>
+
+        <div class="content">
+            <div class="profile">
+                <h2>User Profile</h2> 
+                <form action="/update-profile" method="POST">
+                    <div class="form-profile">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="nickname" style="color: var(--third-color);" value="<%= user.nickname %>">
+                    </div>
+                    <div class="form-profile">
+                        <label for="firstname">First Name</label>
+                        <input type="text" id="firstname" name="firstname" value="<%= user.firstname %>">
+                    </div>
+                    <div class="form-profile">
+                        <label for="lastname">Last Name</label>
+                        <input type="text" id="lastname" name="lastname" value="<%= user.lastname %>">
+                    </div>
+                    <div class="form-profile">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="<%= user.email %>">
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn-profile btn-profile-save">Save Changes</button>
+                        <button type="button" class="btn-profile btn-profile-cancel">Cancel</button>
+                    </div>
+                </form>
+
+                <div class="form-group">
+                  <label>MetaMask Address:</label>
+                  <br>
+                  <p id="metaMaskAddress">Not connected</p>
+                </div>  
+            </div>
+            
+            <br>
+                
+            <h2 style="color: var(--third-color);">Change Password</h2>
+            <form action="/update-password" method="POST"> <!-- Added form action for updating password -->
+                <div class="form-profile">
+                  
+                  <label for="currentPassword">Current Password</label>
+                  <input type="password" id="currentPassword" name="currentPassword">
+              </div>
+              <div class="form-profile">
+                  <label for="newPassword">New Password</label>
+                  <input type="password" id="newPassword" name="newPassword">
+              </div>
+              <div class="form-profile">
+                  <label for="confirmPassword">Confirm New Password</label>
+                  <input type="password" id="confirmPassword" name="confirmPassword">
+              </div>
+              <div class="text-right">
+                  <button type="submit" class="btn-profile btn-profile-save">Save Changes</button>
+                  <button type="button" class="btn-profile btn-profile-cancel">Cancel</button>
+              </div>
+          </form>
+
+          <button onclick="registerWriter()" style="cursor: pointer;">Register as Writer</button>
+          <br>
+          <button onclick="subscribe()" style="cursor: pointer;">Subscribe</button>
+
+      </div>
+  </div>
+
+<script
+  src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"
+  type="application/javascript"> </script>
+
+
+<script>
+const contractAddress = '0x7868A4757667f900A6D16AF851B0642034BD509D'; // Insert your contract address here
+const contractABI = [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_commissionRate",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "writer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "commissionAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "CommissionReceived",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "writer",
+          "type": "address"
+        }
+      ],
+      "name": "SubscriptionRenewed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "writer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "earnedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "WriterEarned",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "writer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "initialBalance",
+          "type": "uint256"
+        }
+      ],
+      "name": "WriterRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "commissionRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "earn",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "subscriberAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getIsSubscriber",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isSubscriber",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "registerWriter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "subscribe",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalWriters",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unsubscribe",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawBalance",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "writerBalances",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
+
+  async function checkMetaMaskConnection() {
+    if (window.ethereum) {
+      try {
+        // Request MetaMask to connect
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        // Get the current Ethereum accounts
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+
+        // Check if accounts are available
+        if (accounts.length > 0) {
+          const ownerAddress = accounts[0];
+          console.log('Connected to MetaMask');
+          console.log('Current Account:', ownerAddress);
+
+          // Display the MetaMask address on the HTML page
+          document.getElementById('metaMaskAddress').innerText = ownerAddress;
+        } else {
+          console.error('No account available');
+        }
+
+      } catch (error) {
+        console.error('MetaMask connection error:', error);
+      }
+    } else {
+      console.error('MetaMask not detected');
+    }
+  }
+
+  async function subscribe() {
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+
+      if (accounts.length > 0) {
+        const userAddress = accounts[0];
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const wrimonContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+        const subscriptionAmount = ethers.utils.parseEther('0.002');
+
+        const transaction = await wrimonContract.subscribe({ value: subscriptionAmount });
+
+        await transaction.wait();
+
+      } else {
+        console.error('No account available');
+      }
+
+    } catch (error) {
+      console.error('MetaMask connection error:', error);
+    }
+  } else {
+    console.error('MetaMask not detected');
+  }
+}
+
+async function registerWriter() {
+            if (window.ethereum) {
+                try {
+                    // Request MetaMask to connect
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+
+                    if (accounts.length > 0) {
+                        const userAddress = accounts[0];
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const signer = provider.getSigner();
+                        const wrimonContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                        // Call the registerWriter function
+                        const transaction = await wrimonContract.registerWriter();
+
+                        // Wait for the transaction to be mined
+                        await transaction.wait();
+
+                        console.log('Successfully registered as a writer');
+
+                    } else {
+                        console.error('No account available');
+                    }
+
+                } catch (error) {
+                    console.error('MetaMask connection error:', error);
+                }
+            } else {
+                console.error('MetaMask not detected');
+            }
+        }
+
+</script>
+    <script src="js/design_changes.js"></script>
+</body>
+</html>

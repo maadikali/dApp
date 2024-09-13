@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wrimon | Articles Ordering Service</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+
+<body>
+  <div class="container">
+    <nav>
+      <div class="navbar">
+        <div class="logo">
+          <a href="/dashboard">
+            <h1>Wrimon</h1>
+          </a>
+          <ion-icon name="contrast-outline" id="icon" class="icon-dark-mod" style="color: var(--third-color)"></ion-icon>
+        </div>
+        <ul>
+          <li><a href="/dashboard">
+            <i class="fas fa-book"></i>
+            <span class="nav-item">Dashboard</span>
+          </a></li>
+          <li><a href="/fill_out">
+            <i class="fas fa-clock"></i>
+            <span class="nav-item">Article Ordering</span>
+          </a></li>
+          <li><a href="/profile">
+            <i class="fas fa-user"></i>
+            <span class="nav-item">Profile</span>
+          </a></li>
+          <% if (!session || !session.passport || !session.passport.user) { %>
+          <li><a href="/login">
+            <i class="fab fa-dochub"></i>
+            <span class="nav-item">Sign</span>
+          </a></li>
+          <% };%>
+          <% if (session && session.passport && session.passport.user) { %>
+            <li>
+              <form action="/logout" method="POST">
+                <button type="submit" class="logout-button">
+                  <i class="fas fa-sign-out-alt"></i>
+                  <span class="nav-item">Logout</span>
+                </button>
+              </form>
+            </li>
+          <% };%>
+        </ul>
+      </div>
+    </nav>
+
+    <section class="main">
+        <div class="main-top">
+          <p>Explore the universe!</p>
+        </div>
+        <div class="main-body">
+          <h1>Task Description</h1>
+  
+          <form action="/fill_out" method="POST">
+            <div class="input-data1">
+                <label for="category" style="color: var(--third-color)">Category:</label>
+                <br>
+                <select required name="category_id">
+                    <option value="" disabled selected>Select a Category</option>
+                    <% categories.forEach(category => { %>
+                        <option value="<%= category.category_id %>"><%= category.category_name %></option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <br>
+
+            <div class="input-data1">
+              <label for="direction" style="color: var(--third-color)">Direction:</label>
+              <br>
+              <select required name="direction_id">
+                  <option value="" disabled selected>Select a Direction</option>
+                  <% article_directions.forEach(articleDirection => { %>
+                      <option value="<%= articleDirection.direction_id %>"><%= articleDirection.direction_name %></option>
+                  <% }); %>
+              </select>
+            </div>
+
+            <br>
+        
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <br>
+                <input type="text" required id="title" name="title">
+            </div>
+        
+            <br>
+        
+            <div class="form-group">
+                <label for="detailed-instructions">Detailed Instructions:</label>
+                <br>
+                <textarea rows="8" cols="80" required id="content" name="content"></textarea>
+            </div>
+        
+            <br>
+        
+            <div class="form-group">
+                <label>Estimate:</label>
+                <text class="budget">&#160; 0.001</text>
+                <br>
+            </div>
+        
+            <br>
+        
+            <div class="form-group">
+                <input type="submit" value="Submit">
+            </div>
+        </form>
+        </div>
+    </section>
+  </div>
+  
+  <script src="js/design_changes.js"></script>
+</body>
+</html>
