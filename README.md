@@ -1,7 +1,6 @@
 # Introduction
 The Write-To-Earn decentralized application (dApp) is designed to revolutionize how authors, bloggers, and content creators monetize their talents in the digital content realm. This platform introduces 
-a Write-To-Earn ecosystem, enabling users to earn Bitcoin for their valuable contributions. 
-Compensation is based on the qualityand engagement of their work, including articles, blog posts, stories, and other written content.
+a Write-To-Earn ecosystem, enabling users to earn Bitcoin for their valuable contributions.  Compensation is based on the quality and engagement of their work, including articles, blog posts, stories, and other written content.
 
 # Problem/Need
 This dApp addresses key issues in:
